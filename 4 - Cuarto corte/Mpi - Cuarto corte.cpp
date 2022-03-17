@@ -1,4 +1,4 @@
-// MPI cuarto corte.cpp : 2182059 - Alejandro Romero Serrano y 2162112 - Sergio Roa.
+
 
 #include <mpi.h>
 #include <iostream>
@@ -13,38 +13,22 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    
+
     // declaración de variables:
 
+    system("color 7C");
     int Filas, Columnas, n, tiempoDeseado, temperaturaDeseada;
     float k, sT, sX, Ui, Uf, Uc;
     double** M;
     double** m;
     double t1, t2;
 
-    
+
     // Se inicializa la ejecución de MPI, declarando el comunicador global, 
     // es decir, por aquel que haremos generalmente el trabajo y aplicando una
     // variable de estado que será usada en las funciones de envío y recepción.
-    
-
-    MPI_Status status;
-    MPI_Comm comunicadorPrincipal;
-
-    
-    MPI_Init(&argc, &argv);
-    t1 = MPI_Wtime();
-    system("color 7C");
 
 
-    // Declaración para visualizar el número de procesos globales:
-    int world_size;
-    
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    
-    // Para mostrar el rango del proceso:
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     
     // Menú de bienvenida al programa.
     cout << "\t\t|PROGRAMA PARA GRAFICAR LA TEMPERATURA DE UNA BARRA| \n";
@@ -64,6 +48,21 @@ int main(int argc, char** argv) {
     cout << "\nAhora, en qu\x82 centimetros de salto desea de X, y posteriormente, el salto temporal:\n";
     cin >> sX;
     cin >> sT;
+
+    MPI_Init(&argc, &argv);
+    t1 = MPI_Wtime();
+
+
+    // Declaración para visualizar el número de procesos globales:
+    int world_size;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Para mostrar el rango del proceso:
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    
 
 
     // Se hace para obtener el nombre del procesador: 
@@ -137,15 +136,19 @@ int main(int argc, char** argv) {
                     M[i][j] = 0.005;
                 }
             }
+            MPI_Status status;
+            MPI_Recv(&M[i][j], total, MPI_DOUBLE, world_rank, 0, MPI_COMM_WORLD, &status);
+            MPI_Send(&m[i][j], total, MPI_DOUBLE, world_rank, 0, MPI_COMM_WORLD);
+            cout << m[i][j] << "\t";
+           
 
-            cout << M[i][j] << "\t";
             // Se envían los datos trabajados desde M al proceso numero 2 (proceso id=1)
             // para que existan diferentes procesos manejados al tiempo. Con M las asignaciones y con m
             // las impresiones finales.
 
-            MPI_Send(&M, total, MPI_DOUBLE, world_rank + 1, 0, MPI_COMM_WORLD);
+           
 
-            MPI_Recv(&m, total, MPI_DOUBLE, world_rank, 0, MPI_COMM_WORLD, &status);
+            
 
         }
         cout << "\n";
